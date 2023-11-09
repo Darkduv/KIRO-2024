@@ -82,7 +82,6 @@ def better_gain(gain):
     if the objective is a minimization, the gains are better if < 0.
     else when gain > 0 :
         correct the return below in function of that."""
-    # return gain < 0
-    return -1
+    return gain < 0
 
 

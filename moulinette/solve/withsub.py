@@ -36,7 +36,7 @@ def solve(instance: Instance):
 
     ss_cable_type = max(instance.substation_substation_cable_types, key=lambda cable:cable.probability_of_failure).id
 
-    l_station_y = [ for in dic_station_y.items()]
+    l_station_y = [(yy, s_id) for yy, s_id in dic_station_y.items()]
 
     sol = Solution(turbines,substations, [])
 
