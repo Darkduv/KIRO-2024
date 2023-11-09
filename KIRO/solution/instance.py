@@ -1,3 +1,6 @@
+from dataclasses import dataclass
+
+from KIRO.structures import *
 
 @dataclass
 class Instance:
