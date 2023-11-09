@@ -49,10 +49,10 @@ def from_json(
                 value['x']=value['main_land_station']['x']
                 value['y']=value['main_land_station']['y']
                 value.pop('main_land_station')
-            result[the_class.__name__]=the_class(**value)
+            result[key_json]=the_class(**value)
         else:
             the_class = import_dict[key_json]
-            result[the_class.__name__] = []
+            result[key_json] = []
             for object in value : 
                 result[the_class.__name__].append(
                     the_class(**object)
