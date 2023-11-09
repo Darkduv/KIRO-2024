@@ -5,3 +5,7 @@ from KIRO.structures.substation_substation_cable_type import SubstationSubstatio
 from KIRO.structures.substation_type import SubstationType
 from KIRO.structures.wind_scenario import WindScenario
 from KIRO.structures.wind_turbine import WindTurbine
+
+from KIRO.structures.turbine import Turbine
+from KIRO.structures.substation import Substation
+from KIRO.structures.substation_substation_cable import SubstationSubstationCable
