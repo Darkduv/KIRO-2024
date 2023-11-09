@@ -238,7 +238,7 @@ class SubstationSubstationCable :
     cable_type          : int
 
 @dataclass
-class Substation :
+class Substation(ById):
     id              : int
     land_cable_type : int
     substation_type : int
