@@ -38,9 +38,9 @@ class ById(ABC):
         cls.dict_id = {}
 
     @property
-    @abstractmethod
     def id_(self) -> int:
-        ...
+        return self.id
+
 
     def __post_init__(self):
         self.dict_id[self.id_] = self
@@ -53,10 +53,75 @@ class ById(ABC):
             print("KeyError : ", f"cls.__name__ = {cls.__name__}, id = {id_}")
             raise e
 
-# @dataclass
-# class Instance:
-#     """Contains instance data."""
-#
-# @dataclass
-# class Solution:
-#     """Contains solution data."""
+###################################
+
+@dataclass
+class LandSubstationCableType(ById):
+    rating                  : float
+    probability_of_failure  : float
+    variable_cost           : float
+    id                      : int
+    fixed_cost              : float
+
+
+@dataclass
+class Parameters:
+    fixed_cost_cable        : float
+    variable_cost_cable     : float
+    curtailing_penalty      : float
+    curtailing_cost         : float
+    x                       : float
+    y                       : float
+    maximum_power           : float
+    maximum_curtailing      : float
+
+
+
+@dataclass
+class SubstationLocation(ById) :
+    id      :   int
+    x       :   float
+    y       :   float
+
+@dataclass
+class SubstationSubstationCableType(ById):
+    rating          : float
+    variable_cost   : float
+    id              : int
+    fixed_cost      : float
+
+
+@dataclass
+class SubstationType(ById) :
+    cost                    : float
+    rating                  : float
+    probability_of_failure  : float
+    id                      : int
+
+@dataclass
+class WindScenario(ById) :
+    power_generation    : float
+    probability         : float
+    id                  : int
+
+@dataclass
+class WindTurbine(ById) :
+    id      : int
+    x       : float
+    y       : float
+
+
+@dataclass
+class Instance:
+
+    land_substation_cable_types: list[LandSubstationCableType]
+    wind_turbines: list[WindTurbine]
+    wind_scenarios: list[WindScenario]
+    substation_locations: list[SubstationLocation]
+    substation_types: list[SubstationType]
+    general_parameters: Parameters
+    substation_substation_cable_types: list[SubstationSubstationCableType]
+
+
+
+Solution = dict
