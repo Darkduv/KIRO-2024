@@ -1,0 +1,1 @@
+from KIRO.algorithms.genetic import GeneticAlgorithm
