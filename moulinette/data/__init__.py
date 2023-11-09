@@ -7,45 +7,57 @@ Parser (loaded with `Driver.load`) implements 'next' iterative parsing method.
 from model import *
 
 from .driver import DriverBase
-
+import json
+from typing import Any
 # todo: download input files
 
 # todo-dev: single output file description
 
 
+###############################################################################
+
+##################### DICTIONNAIRE POUR EXPORT ################################
+IMPORT_DICT = {
+    # 'NOM_DE_LA_CLASSE' : Classe correspondante
+    'land_substation_cable_types'           : LandSubstationCableType,
+    'wind_turbines'                         : WindTurbine,
+    'wind_scenarios'                        : WindScenario,
+    'substation_locations'                  : SubstationLocation,
+    'substation_types'                      : SubstationType,
+    'general_parameters'                    : Parameters,
+    'substation_substation_cable_types'     : SubstationSubstationCableType,
+}
+
+
+
 class Driver(DriverBase):
     """Custom model building methods."""
 
-    def read(self):
+    def read(self) -> Instance:
         # TODO TODO lecture de l'instance
         """Read instance from file."""
+        import_dict = IMPORT_DICT
         reader = self.load("r", "in")
         json_dict = reader.next()
-        # print(json_dict)
-        json_parameters = json_dict["parameters"]
-        parameters_class = {"costs": Costs, "size": Size}
-        parameters = Parameters(**{a: parameters_class[a](**json_parameters[a])
-                                   for a in json_parameters})
-        json_jobs = json_dict["jobs"]
-        jobs = [Job(**a) for a in json_jobs]
-
-        tasks = []
-        for json_task in json_dict["tasks"]:
-            json_machines = json_task["machines"]
-            machines_tasks = [MachineTask(**machine) for machine in json_machines]
-            d_task = {"task": json_task["task"],
-                      "processing_time": json_task["processing_time"],
-                      "machines_tasks": machines_tasks}
-            tasks.append(Task(**d_task))
-        for job in jobs:
-            for task_id in job.sequence:
-                Task.by_id(task_id).job = job.id_
-                Task.time_free = job.release_date
-
-        operators = [Operator(i+1) for i in range(parameters.size.nb_operators)]
-        machines = [Machine(i+1) for i in range(parameters.size.nb_machines)]
-        inst = Instance(json_dict, parameters, jobs, tasks, operators, machines)
-        return inst
+        # on parcourt le json et on crée les objets
+        result = {}
+        for key_json, value in json_dict.items():
+            if not isinstance(value, (list, tuple)):
+                the_class = import_dict[key_json]
+                if 'main_land_station' in value:
+                    value['x'] = value['main_land_station']['x']
+                    value['y'] = value['main_land_station']['y']
+                    value.pop('main_land_station')
+                result[key_json] = the_class(**value)
+            else:
+                the_class = import_dict[key_json]
+                result[key_json] = []
+                for object in value:
+                    result[key_json].append(
+                        the_class(**object)
+                    )
+        # print(result)
+        return Instance(**result)
 
     def write(self, solution):
         """Write solution to file."""

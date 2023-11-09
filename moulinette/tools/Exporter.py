@@ -1,8 +1,8 @@
 ############################# IMPORTS #########################################
 import json
 
-from KIRO.utils import getLogger
-LOGGER=getLogger('EXPORT')
+# from KIRO.utils import getLogger
+# LOGGER=getLogger('EXPORT')
 ###############################################################################
 
 ##################### DICTIONNAIRE POUR EXPORT ################################
@@ -82,7 +82,7 @@ def to_json(
     """
     with open(file_dump,'w') as f :
         # Some logging 
-        LOGGER.info(f"Writing json file : {file_dump}")
+        # LOGGER.info(f"Writing json file : {file_dump}")
         # Passage au format JSON via json.dumps 
         #   (on se sert de assemble_json)
         json_write = json.dumps(
