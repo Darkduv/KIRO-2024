@@ -12,11 +12,7 @@ import platform
 # ----- Variables du module 
 
 # Chemin du dossier utilisateur
-if 'macOS' in platform.platform() : 
-    USERPROFILE_PATH = Path('./')
-else:
-    USERPROFILE_PATH = Path(os.environ['USERPROFILE'])
-
+USERPROFILE_PATH = Path('./')
 USER_DIR = USERPROFILE_PATH / f'./.{__name__}'
 
 # Création du dossier -- Contient notamment les logs
