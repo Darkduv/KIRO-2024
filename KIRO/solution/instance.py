@@ -1,6 +1,14 @@
 from dataclasses import dataclass
 
-from KIRO.structures import *
+from KIRO.structures import (
+    LandSubstationCableType, 
+    WindTurbine, 
+    WindScenario, 
+    SubstationLocation, 
+    SubstationType, 
+    Parameters, 
+    SubstationSubstationCableType
+)
 
 @dataclass
 class Instance:

@@ -32,6 +32,7 @@ class Solution :
             'turbines' : [to_dict(e) for e in self.turbines],
             'substation_substation_cables' : [to_dict(e) for e in self.substation_substation_cables],
         }
+        return result
     
     def to_json(self, json_file:str):
         to_json(
