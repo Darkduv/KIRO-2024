@@ -53,10 +53,10 @@ class ById(ABC):
             print("KeyError : ", f"cls.__name__ = {cls.__name__}, id = {id_}")
             raise e
 
-@dataclass
-class Instance:
-    """Contains instance data."""
-
-@dataclass
-class Solution:
-    """Contains solution data."""
+# @dataclass
+# class Instance:
+#     """Contains instance data."""
+#
+# @dataclass
+# class Solution:
+#     """Contains solution data."""
