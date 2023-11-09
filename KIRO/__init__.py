@@ -13,7 +13,7 @@ import platform
 
 # Chemin du dossier utilisateur
 if 'macOS' in platform.platform() : 
-    USERPROFILE_PATH = './'
+    USERPROFILE_PATH = Path('./')
 else:
     USERPROFILE_PATH = Path(os.environ['USERPROFILE'])
 
