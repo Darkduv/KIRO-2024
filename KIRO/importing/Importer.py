@@ -54,7 +54,7 @@ def from_json(
             the_class = import_dict[key_json]
             result[key_json] = []
             for object in value : 
-                result[the_class.__name__].append(
+                result[key_json].append(
                     the_class(**object)
                 )
 
