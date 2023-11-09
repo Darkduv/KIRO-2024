@@ -3,6 +3,7 @@
 
 # Allez voir ça !! 
 # https://networkx.org/documentation/stable/tutorial.html
+# https://networkx.org/documentation/stable/reference/algorithms/index.html
 
 # imports 
 import networkx as nx
