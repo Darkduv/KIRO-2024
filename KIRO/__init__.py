@@ -7,11 +7,16 @@ les fichiers de logs.
 
 import os
 from pathlib import Path
+import platform
 
 # ----- Variables du module 
 
 # Chemin du dossier utilisateur
-USERPROFILE_PATH = Path(os.environ['USERPROFILE'])
+if 'macOS' in platform.platform() : 
+    USERPROFILE_PATH = './'
+else:
+    USERPROFILE_PATH = Path(os.environ['USERPROFILE'])
+
 USER_DIR = USERPROFILE_PATH / f'./.{__name__}'
 
 # Création du dossier -- Contient notamment les logs
