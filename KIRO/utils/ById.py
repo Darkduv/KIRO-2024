@@ -8,9 +8,8 @@ class ById(ABC):
         cls.dict_id = {}
 
     @property
-    @abstractmethod
     def id_(self) -> int:
-        ...
+        return self.id
 
     def __post_init__(self):
         self.dict_id[self.id_] = self
