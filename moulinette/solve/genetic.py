@@ -35,7 +35,7 @@ class GeneticAlgorithm(ABC):
         return {
             generation:max(
                 self.generations[generation],
-                key=lambda indiv:self.fitness()
+                key=lambda indiv:self.fitness(indiv)
             )
             for generation in self.generations.keys()
         }
