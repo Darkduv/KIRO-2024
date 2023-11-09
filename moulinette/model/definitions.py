@@ -329,3 +329,16 @@ class Solution:
                     )
 
         return Solution(**result)
+
+@dataclass
+class StationXCableType(ById):
+
+    def __init__(self, station_type: SubstationType, cable_type: LandSubstationCableType):
+        self.station_type = station_type
+        self.cable_type = cable_type
+        self.fixed_cost = station_type.cost + cable_type.fixed_cost
+        self.variable_cost = cable_type.variable_cost
+        self.id = station_type.id*1000+cable_type.id
+        self.probability_of_failure = station_type.probability_of_failure + cable_type.probability_of_failure
+
+        self.rating = min(station_type.rating, cable_type.rating)

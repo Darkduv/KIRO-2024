@@ -8,4 +8,4 @@ def score(instance: Instance, solution: Solution):
     """Compute solution score for given instance and check its validity."""
     # TODO TODO le judge est ici
 
-    return 1
+    return 2
