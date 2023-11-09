@@ -7,6 +7,7 @@ from tools import chrono, Bar
 @chrono
 def solve(instance: Instance):
     """Compute nothing."""
+    ## TODO TODO le default
     scheduled = []
     progress = Bar(len(instance.jobs))
     for job in instance.jobs:

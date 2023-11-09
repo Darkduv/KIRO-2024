@@ -6,6 +6,7 @@ from .definitions import *
 
 def score(instance: Instance, solution: Solution):
     """Compute solution score for given instance and check its validity."""
+    # TODO TODO le judge est ici
     machine_tasks = {}
     operator_tasks = {}
     costs = instance.parameters.costs

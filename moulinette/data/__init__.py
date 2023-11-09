@@ -17,6 +17,7 @@ class Driver(DriverBase):
     """Custom model building methods."""
 
     def read(self):
+        # TODO TODO lecture de l'instance
         """Read instance from file."""
         reader = self.load("r", "in")
         json_dict = reader.next()
@@ -48,11 +49,13 @@ class Driver(DriverBase):
 
     def write(self, solution):
         """Write solution to file."""
+        # TODO TODO écriture du résultat
         writer = self.load("w", "out")
         writer.next([schedule.__dict__ for schedule in solution.schedules])
 
     def retrieve(self):
         """Read solution from file."""
+        # TODO TODO lecture du résultat
         reader = self.load("r", "out")
         json_sol = reader.next()
         return Solution(schedules=[Schedule(**d) for d in json_sol])
@@ -60,6 +63,7 @@ class Driver(DriverBase):
 
 def better_gain(gain):
     """Is the gain better ?
+    # TODO TODO à vérifier
 
     if the objective is a minimization, the gains are better if < 0.
     else when gain > 0 :
