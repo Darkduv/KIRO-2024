@@ -1,0 +1,45 @@
+
+running on a
+Q0                   :    6 éléments
+Turbines             :    1 éléments
+Scenarios            :    1 éléments
+LieuStation          :    2 éléments
+S_types              :    3 éléments
+QS                   :    6 éléments
+Param                : Parameters(fixed_cost_cable=5.0, variable_cost_cable=0.5, curtailing_penalty=35000.0, curtailing_cost=350.0, x=0, y=0, maximum_power=18.0, maximum_curtailing=0.1)
+
+running on b
+Q0                   :   20 éléments
+Turbines             :   75 éléments
+Scenarios            :  101 éléments
+LieuStation          :   15 éléments
+S_types              :   20 éléments
+QS                   :   18 éléments
+Param                : Parameters(fixed_cost_cable=5.0, variable_cost_cable=0.5, curtailing_penalty=1500.0, curtailing_cost=15.0, x=0, y=0, maximum_power=18.0, maximum_curtailing=500.0)
+
+running on c
+Q0                   :   24 éléments
+Turbines             :  135 éléments
+Scenarios            :  101 éléments
+LieuStation          :   30 éléments
+S_types              :   24 éléments
+QS                   :   21 éléments
+Param                : Parameters(fixed_cost_cable=5.0, variable_cost_cable=0.5, curtailing_penalty=4500.0, curtailing_cost=45.0, x=0, y=0, maximum_power=18.0, maximum_curtailing=500.0)
+
+running on d
+Q0                   :   24 éléments
+Turbines             :  128 éléments
+Scenarios            : 1001 éléments
+LieuStation          :   35 éléments
+S_types              :   24 éléments
+QS                   :   21 éléments
+Param                : Parameters(fixed_cost_cable=5.0, variable_cost_cable=0.5, curtailing_penalty=7000.0, curtailing_cost=70.0, x=0, y=0, maximum_power=18.0, maximum_curtailing=600.0)
+
+running on e
+Q0                   :   28 éléments
+Turbines             :  125 éléments
+Scenarios            : 1001 éléments
+LieuStation          :   81 éléments
+S_types              :   28 éléments
+QS                   :   24 éléments
+Param                : Parameters(fixed_cost_cable=5.0, variable_cost_cable=0.5, curtailing_penalty=8750.0, curtailing_cost=87.5, x=0, y=0, maximum_power=18.0, maximum_curtailing=750.0)
