@@ -4,6 +4,7 @@
 """
 from .progress import Bar
 from .timer import Clock, chrono
+from .Exporter import to_dict, to_json
 
 
 def report(title, data, message):

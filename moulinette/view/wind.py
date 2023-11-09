@@ -1,6 +1,6 @@
 """Default, empty instance visualization tool."""
 
-# import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 from model import *
 
 IMPORT_DICT = {
@@ -18,14 +18,19 @@ IMPORT_DICT = {
 def view(instance: Instance):
     """Do nothing."""
     ## TODO TODO vue par défaut
-    l_pas_liste = []
-    for arg, code in IMPORT_DICT.items():
-        val = instance.__getattribute__(arg)
-        if isinstance(val, list):
-            print(f"{code: <20} : {len(val): >4} éléments")
-        else:
-            l_pas_liste.append((code, val))
-    print("Station x câbles : ", len(instance.substation_types)*len(instance.land_substation_cable_types))
-    for code, val in l_pas_liste:
-        print(f"{code: <20} : {val}")
-    # print(WindTurbine.by_id(1))
+    # for scenario in instance.wind_scenarios:
+    #     print(f"id={scenario.id: >4} ; power_generation =")
+
+    l_power = [scenario.power_generation for scenario in instance.wind_scenarios]
+    l_proba = [scenario.probability for scenario in instance.wind_scenarios]
+    l_id = [scenario.id for scenario in instance.wind_scenarios]
+
+    fig, ax = plt.subplots()
+
+    ax.scatter(l_power, l_proba)
+
+    for x, y, txt in zip(l_power, l_proba, l_id):
+        ax.annotate(txt, (x, y))
+
+
+    plt.show()

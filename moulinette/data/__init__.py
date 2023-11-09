@@ -63,14 +63,16 @@ class Driver(DriverBase):
         """Write solution to file."""
         # TODO TODO écriture du résultat
         writer = self.load("w", "out")
-        writer.next([schedule.__dict__ for schedule in solution.schedules])
+        dico = solution.assemble_dict()
+        print(dico)
+        writer.next(solution.assemble_dict())
 
     def retrieve(self):
         """Read solution from file."""
         # TODO TODO lecture du résultat
         reader = self.load("r", "out")
         json_sol = reader.next()
-        return Solution(schedules=[Schedule(**d) for d in json_sol])
+        return Solution.from_json(json_sol)
 
 
 def better_gain(gain):
@@ -81,3 +83,6 @@ def better_gain(gain):
     else when gain > 0 :
         correct the return below in function of that."""
     return gain < 0
+
+
+

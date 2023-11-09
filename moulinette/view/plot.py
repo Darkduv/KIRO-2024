@@ -39,4 +39,7 @@ def view(instance: Instance):
     for x, y, txt in zip(l1_x, l1_y, l1_id):
         ax.annotate(txt, (x, y))
 
+    for x, y, txt in zip(l2_x, l2_y, l2_id):
+        ax.annotate(txt, (x, y))
+
     plt.show()

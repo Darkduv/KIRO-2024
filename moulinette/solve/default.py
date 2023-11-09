@@ -8,23 +8,14 @@ from tools import chrono, Bar
 def solve(instance: Instance):
     """Compute nothing."""
     ## TODO TODO le default
-    scheduled = []
-    progress = Bar(len(instance.jobs))
-    for job in instance.jobs:
-        progress.advance(1)
-        time_start = job.release_date
-        for task_id in job.sequence:
-            task: Task = Task.by_id(task_id)
-            machine_task = min(task.machines_tasks,
-                               key=lambda machine_task_: machine_task_.time_free)
-            machine = machine_task.machine
-            operator = min(machine_task.operators,
-                           key=lambda op_id: Operator.by_id(op_id).time_free)
-            start_time = max(machine_task.time_free, time_start)
-            schedule = Schedule(task_id, start_time, machine, operator)
-            scheduled.append(schedule)
-            Machine.by_id(machine).time_free = start_time + task.processing_time
-            Operator.by_id(operator).time_free = start_time + task.processing_time
-            time_start = start_time + task.processing_time
 
-    return Solution(schedules=scheduled)
+    substation_type = instance.substation_types[0].id
+    to_mainland_cable_type = instance.land_substation_cable_types[0].id
+    substation_loc = instance.substation_locations[0].id
+    substations = [Substation(substation_loc, to_mainland_cable_type, substation_type)]
+
+    turbines = [Turbine(wind_turbine.id, substation_loc) for wind_turbine in instance.wind_turbines]
+
+    sol = Solution(turbines,substations, [])
+
+    return sol
