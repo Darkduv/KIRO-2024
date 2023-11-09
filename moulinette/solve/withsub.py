@@ -34,10 +34,19 @@ def solve(instance: Instance):
 
     turbines = [Turbine(wind_turbine.id, dic_station_y[turb_to_stat[wind_turbine.y]]) for wind_turbine in instance.wind_turbines]
 
-    ss_cable_type = max(instance.substation_substation_cable_types, key=lambda cable:cable.probability_of_failure).id
+    ss_cable_type = min(instance.substation_substation_cable_types, key=lambda cable:cable.rating).id
 
     l_station_y = [(yy, s_id) for yy, s_id in dic_station_y.items()]
 
-    sol = Solution(turbines,substations, [])
+    l_station_y.sort()
+    inter_stat = []
+    for i, (yy, s_id) in enumerate(l_station_y[:len(l_station_y)//2]):
+        inter_stat.append((s_id, l_station_y[i+1][1]))
+    for j, (yy, s_id) in enumerate(l_station_y[::-1][:len(l_station_y)//2-1]):
+        inter_stat.append((s_id, l_station_y[::-1][j+1][1]))
+
+    inter_stat = [SubstationSubstationCable(s1, s2, ss_cable_type) for s1, s2 in inter_stat]
+
+    sol = Solution(turbines,substations, inter_stat)
 
     return sol
