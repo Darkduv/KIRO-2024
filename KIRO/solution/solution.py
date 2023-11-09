@@ -12,7 +12,7 @@ EXPORT_DICT = {
 }
 
 @dataclass
-class InstanceExporter :
+class Solution :
     turbines                    :list[Turbine]
     substations                 :list[Substation]
     substation_substation_cables:list[SubstationSubstationCable]
