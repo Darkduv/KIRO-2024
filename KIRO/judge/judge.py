@@ -1,5 +1,3 @@
-from KIRO.inputs.costs import *
-
 from KIRO.solution import (
     Solution, 
     Instance,
