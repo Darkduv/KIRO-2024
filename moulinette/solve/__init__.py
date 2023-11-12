@@ -41,3 +41,6 @@ class Solve(Service, name=__name__):
             upload(self.path, upgraded)
         message = "{key:<30}: score {value[0]:<10}, gain {value[1]}"
         tools.report("Gains", self.gains, message)
+        current_total = sum(s for _, (s,_) in self.gains.items())
+        best_total = sum(s-d for _, (s,d) in self.gains.items())
+        tools.report("", {"Total":(current_total,best_total)}, "{key:<30}: current : {value[0]:.1f} / best saved total : {value[1]:.1f}")
