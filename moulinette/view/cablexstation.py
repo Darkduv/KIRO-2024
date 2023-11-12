@@ -36,10 +36,14 @@ def view(instance: Instance):
     ax = fig.add_subplot(111, projection='3d')
 
     ax.scatter(l_proba, l_rating, l_cost)
+    ax.set_xlabel("proba")
+    ax.set_ylabel("rating")
+    ax.set_zlabel("fixed_cost")
 
     for x, y, z, txt in zip(l_proba, l_rating, l_cost, l_id):
         ax.text(x, y, z, txt)
 
+    fig.suptitle("Types d'ensemble Câbles terre <-> Station x Stations")
 
     plt.show()
 

@@ -3,16 +3,6 @@
 import matplotlib.pyplot as plt
 from model import *
 
-IMPORT_DICT = {
-    # 'NOM_DE_LA_CLASSE' : Classe correspondante
-    'land_substation_cable_types'           : "Q0",
-    'wind_turbines'                         : "Turbines",
-    'wind_scenarios'                        : "Scenarios",
-    'substation_locations'                  : "LieuStation",
-    'substation_types'                      : "S_types",
-    'general_parameters'                    : "Param",
-    'substation_substation_cable_types'     : "QS",
-}
 
 
 def view(instance: Instance):
