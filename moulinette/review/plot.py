@@ -49,5 +49,5 @@ def review(instance: Instance, solution: Solution):
     for cable in solution.substation_substation_cables:
         s1 = SubstationLocation.by_id(cable.substation_id)
         s2 = SubstationLocation.by_id(cable.other_substation_id)
-        plt.arrow(s1.x, s1.y, s2.x-s1.x, s2.y-s1.y, color='green')
+        plt.arrow(s1.x, s1.y, s2.x-s1.x, s2.y-s1.y, color='brown', head_width=1.5, head_length=0.2,length_includes_head=True)
     plt.show()
