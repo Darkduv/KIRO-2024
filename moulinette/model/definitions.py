@@ -223,6 +223,50 @@ class Instance:
     general_parameters: Parameters
     substation_substation_cable_types: list[SubstationSubstationCableType]
 
+    def __post_init__(
+            self,
+    )->None:
+        
+        self.mainland_coords = (self.general_parameters.x, self.general_parameters.y)
+        self.turbines_coords = {
+            turbine.id: (turbine.x, turbine.y)
+            for turbine in self.wind_turbines
+        }
+
+        self.substations_coords = {
+            substation.id: (substation.x, substation.y)
+            for substation in self.substation_locations
+        }
+
+        self.distance_of_turbine_to_substation = {
+            turbine: {
+                substation: ((tx-sx)**2 + (ty-sy)**2)**0.5
+                for substation, (sx, sy) in self.substations_coords.items()
+            }
+            for turbine, (tx, ty) in self.turbines_coords.items()
+        }
+
+        self.distance_of_substation_to_turbine = {
+            substation: {
+                turbine: self.distance_of_turbine_to_substation[turbine][substation]
+                for turbine in self.turbines_coords.keys()
+            }
+            for substation in self.substations_coords.keys()
+        }
+
+        self.distance_of_substation_to_mainland = {
+            substation: ((self.mainland_coords[0]-sx)**2 + (self.mainland_coords[1]-sy)**2)**0.5
+            for substation, (sx, sy) in self.substations_coords.items()
+        }
+
+        self.distance_of_substation_to_other_substation = {
+            substation: {
+                other: ((s1x-s2x)**2 + (s1y-s2y)**2)**0.5
+                for other, (s2x, s2y) in self.substations_coords.items()
+            }
+            for substation, (s1x, s1y) in self.substations_coords.items()
+        }
+
 
 #######
 
@@ -271,7 +315,6 @@ IMPORT_DICT = {
 ###############################################################################
 
 ########################## FONCTIONS UTILES ###################################
-
 
 
 @dataclass
@@ -342,3 +385,6 @@ class StationXCableType(ById):
         self.probability_of_failure = station_type.probability_of_failure + cable_type.probability_of_failure
 
         self.rating = min(station_type.rating, cable_type.rating)
+
+
+###############################################################################
