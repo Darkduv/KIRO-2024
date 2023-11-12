@@ -16,7 +16,9 @@ def solve(instance: Instance):
     for station_type in instance.substation_types:
         for cable_type in instance.land_substation_cable_types:
             lll.append(StationXCableType(station_type, cable_type))
-    sxc_maxi = max(lll, key=lambda sxc: sxc.rating)
+    #sxc_maxi = max(lll, key=lambda sxc: sxc.rating)
+    sxc_maxi = max(lll, key=lambda sxc: (sxc.rating, -sxc.fixed_cost, -sxc.variable_cost))
+    #sxc_maxi = max(lll, key=lambda sxc: (sxc.rating, -sxc.variable_cost, -sxc.fixed_cost))
 
     dic_station_y = {station.y: station.id for station in instance.substation_locations}
     dic_turbine_y = defaultdict(list)

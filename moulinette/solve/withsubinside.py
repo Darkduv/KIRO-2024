@@ -9,7 +9,7 @@ from random import choice
 
 @chrono
 def solve(instance: Instance):
-    """Compute nothing."""
+    """Rejoint chaque substation avec des éoliennes à une autre substation de son groupe"""
     ## TODO TODO le default
 
 
@@ -17,14 +17,15 @@ def solve(instance: Instance):
     for station_type in instance.substation_types:
         for cable_type in instance.land_substation_cable_types:
             lll.append(StationXCableType(station_type, cable_type))
-    sxc_maxi = max(lll, key=lambda sxc: sxc.rating)
+    sxc_maxi = max(lll, key=lambda sxc: (sxc.rating, sxc.fixed_cost, sxc.variable_cost))
 
-    dic_station_y = {station.y: station.id for station in instance.substation_locations}
+    locations = sorted(instance.substation_locations, key=lambda loc: -loc.x)
+    dic_station_y = {station.y: station.id for station in locations}
     dic_turbine_y = defaultdict(list)
     for turbine in instance.wind_turbines:
         dic_turbine_y[turbine.y].append(turbine.id)
     dic_station_y2 = defaultdict(list)
-    for station in instance.substation_locations:
+    for station in locations:
         dic_station_y2[station.y].append(station.id)
 
     turb_to_stat = {}

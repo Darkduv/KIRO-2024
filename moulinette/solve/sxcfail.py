@@ -18,7 +18,10 @@ def solve(instance: Instance):
             lll.append(StationXCableType(station_type, cable_type))
     sxc_maxi = min(lll, key=lambda sxc: sxc.probability_of_failure)
 
-    dic_station_y = {station.y: station.id for station in instance.substation_locations}
+
+    locations = sorted(instance.substation_locations, key=lambda loc: -loc.x)
+
+    dic_station_y = {station.y: station.id for station in locations}
     dic_turbine_y = defaultdict(list)
     for turbine in instance.wind_turbines:
         dic_turbine_y[turbine.y].append(turbine.id)
