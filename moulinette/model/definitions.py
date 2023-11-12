@@ -5,6 +5,7 @@ from typing import Type, Generic, TypeVar, Callable, Any, Self
 T = TypeVar("T")
 
 import json
+from collections import defaultdict
 
 # from KIRO.utils import getLogger
 # LOGGER=getLogger('EXPORT')
@@ -323,14 +324,62 @@ class Solution:
     substations: list[Substation]
     substation_substation_cables: list[SubstationSubstationCable]
 
-    def add_turbine(self, turb: Turbine):
-        self.turbines.append(turb)
+    def __post_init__(self, )->None:
+        self.turbines_connected_to_substations:dict[int, list[int]] = {
+            substa.id: [
+                turbine.id
+                for turbine in self.turbines
+                if turbine.substation_id == substa.id
+            ]
+            for substa in self.substations
+        }
 
-    def add_substation(self, substa: Substation):
-        self.substations.append(substa)
+        self.substations_locations:dict[int, tuple[float]]= {
+            substa.id:(
+                SubstationLocation.by_id(substa.id).x,
+                SubstationLocation.by_id(substa.id).y
+            )
+            for substa in self.substations
+        }
 
-    def add_sub_sub_cable(self, sub_sub_cable: SubstationSubstationCable):
-        self.substation_substation_cables.append(sub_sub_cable)
+        self.turbines_locations:dict[int, tuple[float]] = {
+            turbine.id:(
+                WindTurbine.by_id(turbine.id).x,
+                WindTurbine.by_id(turbine.id).y,
+            )
+            for turbine in self.turbines
+        }
+
+        self.substations_connected:dict[int, list[int]] = defaultdict(list)
+        for cable in self.substation_substation_cables:
+            self.substations_connected[
+                cable.other_substation_id
+            ].append(cable.substation_id)
+        
+        self.substations_types:dict[int, SubstationType]= {
+            substa.id: SubstationType.by_id(substa.substation_type)
+            for substa in self.substations
+        }
+
+        self.mainland_cable_types:dict[int, LandSubstationCableType]= {
+            substa.id: LandSubstationCableType.by_id(substa.land_cable_type)
+            for substa in self.substations
+        }
+
+        self.substation_substation_cables_types:dict[int, SubstationSubstationCableType]= {
+            cable.substation_id: SubstationSubstationCableType.by_id(cable.cable_type)
+            for cable in self.substation_substation_cables
+        }
+
+        self.exiting_cables:dict[int, list[SubstationSubstationCable]]={
+            substation.id:[
+                cable 
+                for cable in self.substation_substation_cables
+                if cable.substation_id == substation.id
+            ]
+            for substation in self.substations
+        }
+        
 
     def assemble_dict(self, ) -> dict:
         result = {
