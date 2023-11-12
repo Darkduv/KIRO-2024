@@ -80,8 +80,8 @@ def score(
             
             #### Calcul de cf
             c_f = 0
+            rate1=0
             nb_turbs_current=len(solution.turbines_connected_to_substations[substation.id])
-
             cable_vers_other=solution.exiting_cables[substation.id]
 
             if len(cable_vers_other) >0 : 
@@ -97,16 +97,13 @@ def score(
                 otherterm = max(0,power*nb_turbines_other+otherterm2-otherterm3)
 
                 c_f += otherterm
-
-            else:
-                rate1=0
         
             c_f += max(0, power*nb_turbs_current-rate1)
 
             sous_cout += proba_fail*cost_from_curtailing(c_f) + (1-proba_fail)*cost_from_curtailing(c_n)
         
         cout_operationnel += proba*sous_cout
-    
+        
     return construction_cost_1\
             + construction_cost_2\
             + construction_cost_3\
