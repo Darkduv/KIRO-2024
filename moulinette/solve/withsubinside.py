@@ -4,6 +4,7 @@ from model import *
 from tools import chrono, Bar
 
 from collections import defaultdict
+from random import choice
 
 
 @chrono
@@ -22,6 +23,9 @@ def solve(instance: Instance):
     dic_turbine_y = defaultdict(list)
     for turbine in instance.wind_turbines:
         dic_turbine_y[turbine.y].append(turbine.id)
+    dic_station_y2 = defaultdict(list)
+    for station in instance.substation_locations:
+        dic_station_y2[station.y].append(station.id)
 
     turb_to_stat = {}
     for y in dic_turbine_y:
@@ -36,14 +40,12 @@ def solve(instance: Instance):
 
     ss_cable_type = min(instance.substation_substation_cable_types, key=lambda cable:cable.rating).id
 
-    l_station_y = [(yy, s_id) for yy, s_id in dic_station_y.items()]
 
-    l_station_y.sort()
     inter_stat = []
-    for i, (yy, s_id) in enumerate(l_station_y[:len(l_station_y)//2]):
-        inter_stat.append((s_id, l_station_y[i+1][1]))
-    for j, (yy, s_id) in enumerate(l_station_y[::-1][:len(l_station_y)//2-1]):
-        inter_stat.append((s_id, l_station_y[::-1][j+1][1]))
+    for yy, s_id in dic_station_y.items():
+        stat2 = choice([a for a in dic_station_y2[yy] if a != s_id])
+        inter_stat.append((s_id, stat2))
+        substations.append(Substation(stat2, to_mainland_cable_type, substation_type))
 
     inter_stat = [SubstationSubstationCable(s1, s2, ss_cable_type) for s1, s2 in inter_stat]
 

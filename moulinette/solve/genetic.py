@@ -274,7 +274,7 @@ def solve(instance: Instance):
 
     algo.compute_generations(number_of_generations_to_compute=nbgenerations)
 
-    return algo.best_individuals()[max(algo.best_individuals())][0]
+    return algo.best_individuals()[max(algo.best_individuals())]
 
 
 

@@ -148,7 +148,7 @@ class ById(ABC):
         self.dict_id[self.id_] = self
 
     @classmethod
-    def by_id(cls, id_: int):
+    def by_id(cls: T, id_: int) -> Type[T]:
         try:
             return cls.dict_id[id_]
         except KeyError as e:
