@@ -35,8 +35,6 @@ def simplify_instance(
             ]
         )
 
-        mean_probability=total_probability/len(labelized_wind)
-
         mean_power=sum(
             [
                 scenario.power_generation*scenario.probability
@@ -47,7 +45,7 @@ def simplify_instance(
         new_wind_scenarii.append(
             WindScenario(
                 power_generation=mean_power,
-                probability=mean_probability,
+                probability=total_probability,
                 id=1e6+n_cluster,
             )
         )
