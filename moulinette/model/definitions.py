@@ -229,6 +229,9 @@ class Instance:
     )->None:
         
         self.mainland_coords = (self.general_parameters.x, self.general_parameters.y)
+        self.substation_ids = [
+            sub.id for sub in self.substation_locations
+        ]
         self.turbines_coords = {
             turbine.id: (turbine.x, turbine.y)
             for turbine in self.wind_turbines

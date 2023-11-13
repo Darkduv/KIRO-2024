@@ -43,6 +43,12 @@ class GeneticAlgorithm(ABC):
             )
             for generation in self.generations.keys()
         }
+    
+    def best_individual_last_generation(self, )->Any:
+        return max(
+            self.generations[max(self.generations)],
+            key=lambda indiv:self.fitness(indiv)
+        )
 
     @abstractmethod
     def fitness(self, individual:Any)->float:
@@ -198,11 +204,16 @@ class TopologicalGenetic(GeneticAlgorithm):
     instance:Instance=None
     simplified_instance:Instance= None
     true_fitness_every:int=30
+    minimal_number_substation:int=1
+    fintess_calls:int=0
+    simpl_fitness_calls:int=0
 
     def fitness(self, individual: Solution) -> float:
+        TopologicalGenetic.fintess_calls+=1
         return -score(instance=TopologicalGenetic.instance, solution=individual)
     
     def simplified_fitness(self, individual: Solution)->float:
+        TopologicalGenetic.simpl_fitness_calls+=1
         return -score(instance=TopologicalGenetic.simplified_instance, solution=individual)
     
     def select_best_individuals(
@@ -213,9 +224,11 @@ class TopologicalGenetic(GeneticAlgorithm):
         Returns:
             list[Any]: Meilleurs individus retenus
         """
-        if max(self.generations)%TopologicalGenetic.true_fitness_every==0:
+        if (max(self.generations)%TopologicalGenetic.true_fitness_every)==0:
+            print(max(self.generations), 'fitness')
             fitness=self.fitness
         else:
+            print(max(self.generations), 'simplified')
             fitness=self.simplified_fitness
 
         return sorted(
@@ -242,7 +255,7 @@ class TopologicalGenetic(GeneticAlgorithm):
 
         # Ensuite, on garde aléatoirement le reste
         for substaid in list(subids_1.union(subids_2)):
-            if random.random()>0.05 or len(substations_to_keep)==0:
+            if random.random()>0.5 or len(substations_to_keep)<self.minimal_number_substation:
                 substations_to_keep.append(substaid)
         
         # Maintenant il faut trouver les types des cables et des substa corres
@@ -432,37 +445,94 @@ class TopologicalGenetic(GeneticAlgorithm):
         )
 
     @classmethod
-    def random_init_pop(cls, nb_pop:int)->list[Solution]:
-        return [TopologicalGenetic.random_init_solution() for _ in range(nb_pop)]
+    def random_init_solution_multiple_substas(cls, nbsub:int)->Solution:
+        subids=random.choices(cls.instance.substation_ids, k=min(nbsub, len(cls.instance.substation_locations)))
+        new_subs = []
+        for idsub in subids:
+            new_subs.append(
+                Substation(
+                    id=idsub,
+                    land_cable_type=random.choice(
+                        [
+                            land.id
+                            for land in cls.instance.land_substation_cable_types
+                        ]
+                    ),
+                    substation_type=random.choice(
+                        [
+                            typesub.id
+                            for typesub in cls.instance.substation_types
+                        ]
+                    )
+                )
+            )
+        
+        new_turbines=[]
+        for turbine in cls.instance.wind_turbines:
+            closestsubsta = min(
+                {
+                    theid: thedist
+                    for theid, thedist in cls.instance.distance_of_turbine_to_substation[turbine.id].items()
+                    if theid in subids
+                },
+                key=lambda thekey: cls.instance.distance_of_turbine_to_substation[turbine.id][thekey]
+            )
+            new_turbines.append(
+                Turbine(
+                    id=turbine.id, 
+                    substation_id=closestsubsta,
+                )
+            )
+        
+        subsubcable=[]
+
+        # if len(new_substas)>1 : print(len(new_substas))
+        # On renvoie la solution 
+        return Solution(
+            turbines=new_turbines,
+            substations=new_subs,
+            substation_substation_cables=subsubcable,
+        )
+        
+
+    @classmethod
+    def random_init_pop(cls, nb_pop:int, nbsubstasinit:int)->list[Solution]:
+        if nbsubstasinit==1:
+            return [TopologicalGenetic.random_init_solution() for _ in range(nb_pop)]
+        else:
+            return [TopologicalGenetic.random_init_solution_multiple_substas(nbsubstasinit) for _ in range(nb_pop)]
 
 @chrono
 def solve(instance: Instance):
-    nbpop = 1000
-    nbgenerations = 100
+    nbpop = 10
+    nbgenerations = 1000
     mutationrate = 0.05
 
     TopologicalGenetic.instance = instance
+    TopologicalGenetic.minimal_number_substation=1
 
     if len(instance.wind_scenarios)==1:
         TopologicalGenetic.true_fitness_every=1
     else:
-        TopologicalGenetic.true_fitness_every= 20
+        TopologicalGenetic.true_fitness_every= 5
         TopologicalGenetic.simplified_instance = simplify_instance(
             instance=instance, 
             # nb_senarii_final=3,
-            nb_senarii_final=len(instance.wind_scenarios)//20+1,
+            nb_senarii_final=len(instance.wind_scenarios)//100+1,
         )
 
     
     algo = TopologicalGenetic(
-        initial_population=TopologicalGenetic.random_init_pop(nb_pop=nbpop),
+        initial_population=TopologicalGenetic.random_init_pop(
+            nb_pop=nbpop, 
+            nbsubstasinit=len(instance.substation_locations)//2,
+        ),
         number_of_best_indiv=nbpop//2,
         mutation_rate=mutationrate,
     )
 
     algo.compute_generations(number_of_generations_to_compute=nbgenerations)
-
-    return algo.best_individuals()[max(algo.best_individuals())]
+    return algo.best_individual_last_generation()
 
 
 
