@@ -325,6 +325,11 @@ class Solution:
     substation_substation_cables: list[SubstationSubstationCable]
 
     def __post_init__(self, )->None:
+        self.substations_ids=[
+            sub.id
+            for sub in self.substations
+        ]
+
         self.turbines_connected_to_substations:dict[int, list[int]] = {
             substa.id: [
                 turbine.id
