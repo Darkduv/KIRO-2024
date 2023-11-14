@@ -3,6 +3,7 @@ import random
 from abc import ABC, abstractclassmethod, abstractmethod
 from typing import Any
 from collections import defaultdict
+import copy
 
 class GeneticAlgorithm(ABC):
 
@@ -234,7 +235,7 @@ class TopologicalGenetic(GeneticAlgorithm):
             reverse=True
         )[:self.number_best_indiv]
 
-        print(max(self.generations), self.fitness(sorted_indiv[0]))
+        print(max(self.generations), self.fitness(sorted_indiv[0]), len(sorted_indiv[0].substations))
 
         return sorted_indiv
 
@@ -338,37 +339,13 @@ class TopologicalGenetic(GeneticAlgorithm):
                 new_substas.append(
                     Substation(
                         id=theid, 
-                        land_cable_type=random.choice(
-                            [
-                                land.id
-                                for land in self.instance.land_substation_cable_types
-                            ]
-                        ),
-                        substation_type=random.choice(
-                            [
-                                typesub.id
-                                for typesub in self.instance.substation_types
-                            ]
-                        ),
+                        land_cable_type=2,
+                        substation_type=2,
                     )
                 )
         
         # On peut changer le type : 
         for i, substachange in enumerate(indiv1.substations):
-            if random.random()<self.mutation_rate:
-                substachange.land_cable_type = random.choice(
-                    [
-                        land.id
-                        for land in self.instance.land_substation_cable_types
-                    ]
-                )
-            if random.random()<self.mutation_rate:
-                substachange.substation_type = random.choice(
-                    [
-                        typesub.id
-                        for typesub in self.instance.substation_types
-                    ]
-                )
             if random.random()<self.mutation_rate:
                 substachange.id=random.choice(
                     [
@@ -422,20 +399,6 @@ class TopologicalGenetic(GeneticAlgorithm):
             ]
         )
 
-        typesubta = random.choice(
-            [
-                typesub.id
-                for typesub in cls.instance.substation_types
-            ]
-        )
-
-        landcable=random.choice(
-            [
-                land.id
-                for land in cls.instance.land_substation_cable_types
-            ]
-        )
-
         return Solution(
             turbines=[
                 Turbine(id=windt.id, substation_id=substa_active)
@@ -444,8 +407,8 @@ class TopologicalGenetic(GeneticAlgorithm):
             substations=[
                 Substation(
                     id=substa_active,
-                    substation_type=typesubta,
-                    land_cable_type=landcable,
+                    substation_type=2,
+                    land_cable_type=2,
                 )
             ],
             substation_substation_cables=[],
@@ -459,18 +422,8 @@ class TopologicalGenetic(GeneticAlgorithm):
             new_subs.append(
                 Substation(
                     id=idsub,
-                    land_cable_type=random.choice(
-                        [
-                            land.id
-                            for land in cls.instance.land_substation_cable_types
-                        ]
-                    ),
-                    substation_type=random.choice(
-                        [
-                            typesub.id
-                            for typesub in cls.instance.substation_types
-                        ]
-                    )
+                    land_cable_type=2,
+                    substation_type=2,
                 )
             )
         
@@ -509,10 +462,101 @@ class TopologicalGenetic(GeneticAlgorithm):
         else:
             return [TopologicalGenetic.random_init_solution_multiple_substas(nbsubstasinit) for _ in range(nb_pop)]
 
+class TypalGenetic(GeneticAlgorithm):
+    instance:Instance=None
+    simplified_instance:Instance= None
+    true_fitness_every:int=30
+    minimal_number_substation:int=1
+
+    topological_solution:Solution=None
+
+    def fitness(self, individual: Solution) -> float:
+        return -score(instance=TopologicalGenetic.instance, solution=individual)
+    
+    def simplified_fitness(self, individual: Solution)->float:
+        return -score(instance=TopologicalGenetic.simplified_instance, solution=individual)
+    
+    def select_best_individuals(
+        self, 
+    )->list:
+        """Renvoie les X meilleurs individus pour la dernière génération
+
+        Returns:
+            list[Any]: Meilleurs individus retenus
+        """
+        if (max(self.generations)%TopologicalGenetic.true_fitness_every)==0:
+            fitness=self.fitness
+        else:
+            fitness=self.simplified_fitness
+
+        sorted_indiv = sorted(
+            [
+                indiv
+                for indiv in self.last_generation
+            ],
+            key=fitness,
+            reverse=True
+        )[:self.number_best_indiv]
+
+        print(max(self.generations), self.fitness(sorted_indiv[0]), len(sorted_indiv[0].substations))
+
+        return sorted_indiv
+
+    @classmethod
+    def generate_deepcopy(cls, indiv:Solution):
+        return Solution(
+            turbines=copy.deepcopy(indiv.turbines),
+            substations=copy.deepcopy(indiv.substations),
+            substation_substation_cables=copy.deepcopy(indiv.substation_substation_cables),
+        )
+
+    def mutate(self, indiv1: Solution) -> Solution:
+        new_guy = copy.deepcopy(indiv1)
+        for substa in new_guy.substations:
+            if random.random()<self.mutation_rate:
+                substa.substation_type=random.choice(TypalGenetic.substatypes)
+            if random.random()<self.mutation_rate:
+                substa.land_cable_type=random.choice(TypalGenetic.cabletypes)
+        return TypalGenetic.generate_deepcopy(new_guy)
+
+    
+    def crossover(self, indiv1: Solution, indiv2: Solution) -> Solution:
+        new_guy=TypalGenetic.generate_deepcopy(TypalGenetic.topological_solution)
+        for substa in new_guy.substations:
+            substa.substation_type = random.choice(
+                [
+                    indiv1.substations_types[substa.id].id,
+                    indiv2.substations_types[substa.id].id,
+                ]
+            )
+            substa.land_cable_type = random.choice(
+                [
+                    indiv1.mainland_cable_types[substa.id].id,
+                    indiv2.mainland_cable_types[substa.id].id,
+                ]
+            )
+        return TypalGenetic.generate_deepcopy(new_guy)
+    
+    @classmethod
+    def random_init_solution(cls):
+        new_guy = cls.generate_deepcopy(cls.topological_solution)
+        for substa in new_guy.substations:
+            substa.substation_type = random.choice(cls.substatypes)
+            substa.land_cable_type = random.choice(cls.cabletypes)
+        return cls.generate_deepcopy(new_guy)
+
+    
+    @classmethod
+    def random_init_pop(cls, nbpop:int):
+        return [
+            cls.random_init_solution() 
+            for _ in range(nbpop)
+        ]
+
 @chrono
 def solve(instance: Instance):
     nbpop = 100
-    nbgenerations = 1000
+    nbgenerations = 30
     mutationrate = 0.01
 
     TopologicalGenetic.instance = instance
@@ -532,11 +576,37 @@ def solve(instance: Instance):
     algo = TopologicalGenetic(
         initial_population=TopologicalGenetic.random_init_pop(
             nb_pop=nbpop, 
-            nbsubstasinit=len(instance.substation_locations)//2,
+            # nbsubstasinit=len(instance.substation_locations)//2,
+            nbsubstasinit=1,
         ),
         number_of_best_indiv=nbpop//2,
         mutation_rate=mutationrate,
     )
 
     algo.compute_generations(number_of_generations_to_compute=nbgenerations)
-    return algo.best_individual_last_generation()
+    
+    topological_solution=algo.best_individual_last_generation()
+
+
+    nbpop = 100
+    nbgenerations = 120
+    mutationrate = 0.2
+
+    TypalGenetic.topological_solution = topological_solution
+
+    TypalGenetic.substatypes:list[int]=[t.id for t in instance.substation_types]
+    TypalGenetic.cabletypes:list[int]=[t.id for t in instance.land_substation_cable_types]
+
+    algo_typal = TypalGenetic(
+        initial_population=TypalGenetic.random_init_pop(
+            nbpop=nbpop
+        ),
+        number_of_best_indiv=nbpop//2,
+        mutation_rate=mutationrate,
+    )
+
+    algo_typal.compute_generations(number_of_generations_to_compute=nbgenerations)
+    
+    
+    
+    return algo_typal.best_individual_last_generation()
