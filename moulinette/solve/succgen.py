@@ -4,6 +4,7 @@ from abc import ABC, abstractclassmethod, abstractmethod
 from typing import Any
 from collections import defaultdict
 import copy
+from itertools import product
 
 class GeneticAlgorithm(ABC):
 
@@ -553,6 +554,71 @@ class TypalGenetic(GeneticAlgorithm):
             for _ in range(nbpop)
         ]
 
+def substation_linker(instance:Instance, solution:Solution)->Solution:
+    """Prend une solution et tente de lier ses soustations pour trouver une
+    meilleure solution"""
+
+    sinstance=simplify_instance(instance, 5)
+
+    initialscore = score(instance=sinstance, solution=solution)
+
+    solutions=[]
+
+    for currentsub in solution.substations_ids:
+        prepare_link=[]
+        for si in solution.substations_ids+[-1]:
+            if si!=currentsub:
+                prepare_link.append((currentsub, si))
+        if len(solutions)==0:
+            solutions=prepare_link
+        else:
+            print(f'Currently assembling {len(solutions)} solutions')
+            solutions = [
+                (sol+ prep)
+                for sol in solutions for prep in prepare_link
+            ]
+    nbsolth = len(instance.substation_substation_cable_types)*len(solutions)
+    print(f'Computing {nbsolth} solutions')
+    solutions_prepared = [(sol, c.id) for sol in solutions for c in instance.substation_substation_cable_types]
+
+    if nbsolth>100000 : 
+        print(f'Too many solutions, we will choose 100000 random ones')
+        solutions_prepared = random.choices(solutions_prepared, k=100000)
+
+    i=0
+    best_score = None
+    best_solution = None
+    for sol,ctype in solutions_prepared:
+        i+=1
+        if i%1000==0 : print(
+            f'{i}/{len(solutions_prepared)}, best score={best_score}'
+        )
+        subdep=sol[0::2]
+        subarr=sol[1::2]
+        new_sol = Solution(
+                turbines=solution.turbines,
+                substations=solution.substations,
+                substation_substation_cables=[
+                    SubstationSubstationCable(
+                        substation_id=sd,
+                        other_substation_id=sa,
+                        cable_type=ctype,
+                    )
+                    for sd, sa in zip(subdep, subarr)
+                    if sa!=-1
+                ]
+            )
+        new_score = score(sinstance, new_sol)
+        if best_score is None or new_score<best_score:
+            best_score = new_score
+            best_solution = new_sol
+        else:
+            del(new_sol)
+    
+    if best_score<initialscore : return best_solution
+    else                       : return solution
+
+
 @chrono
 def solve(instance: Instance):
     nbpop = 100
@@ -568,16 +634,16 @@ def solve(instance: Instance):
         TopologicalGenetic.true_fitness_every= 5
         TopologicalGenetic.simplified_instance = simplify_instance(
             instance=instance, 
-            # nb_senarii_final=3,
-            nb_senarii_final=len(instance.wind_scenarios)//5+1,
+            nb_senarii_final=5,
+            # nb_senarii_final=len(instance.wind_scenarios)//5+1,
         )
 
     
     algo = TopologicalGenetic(
         initial_population=TopologicalGenetic.random_init_pop(
             nb_pop=nbpop, 
-            # nbsubstasinit=len(instance.substation_locations)//2,
-            nbsubstasinit=1,
+            nbsubstasinit=len(instance.substation_locations)//2,
+            # nbsubstasinit=2,
         ),
         number_of_best_indiv=nbpop//2,
         mutation_rate=mutationrate,
@@ -588,7 +654,9 @@ def solve(instance: Instance):
     topological_solution=algo.best_individual_last_generation()
 
 
+    # nbpop = 4
     nbpop = 100
+    # nbgenerations = 1
     nbgenerations = 120
     mutationrate = 0.2
 
@@ -606,7 +674,30 @@ def solve(instance: Instance):
     )
 
     algo_typal.compute_generations(number_of_generations_to_compute=nbgenerations)
+
+    typal_solution = algo_typal.best_individual_last_generation()
     
+    linkedsolution = substation_linker(instance, typal_solution)
+
+    # nbpop = 4
+    nbpop = 100
+    # nbgenerations = 1
+    nbgenerations = 120
+    mutationrate = 0.2
+
+    TypalGenetic.topological_solution = linkedsolution
+
+    TypalGenetic.substatypes:list[int]=[t.id for t in instance.substation_types]
+    TypalGenetic.cabletypes:list[int]=[t.id for t in instance.land_substation_cable_types]
+
+    algo_typal = TypalGenetic(
+        initial_population=algo_typal.mutate(linkedsolution),
+        number_of_best_indiv=nbpop//2,
+        mutation_rate=mutationrate,
+    )
+
+    algo_typal.compute_generations(number_of_generations_to_compute=nbgenerations)
+
+    typal_solution = algo_typal.best_individual_last_generation()
     
-    
-    return algo_typal.best_individual_last_generation()
+    return substation_linker(instance, typal_solution)
