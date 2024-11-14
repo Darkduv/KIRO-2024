@@ -16,8 +16,3 @@ def reseq_2tones(sigma: list[int], two_tones: list[int], delta: int) -> list[int
         two_tones.remove(v)
         sigma[i:i+delta+1] = sigma[i+1:i+delta+1]+sigma[i:i+1]
     return sigma
-def score(
-    instance : Instance,
-    solution : Solution,
-)->float:
-
