@@ -1,33 +1,37 @@
 """Default, empty solver implementation."""
 
-from model import *
+from model import (
+    Instance, Solution, VehicleType
+)
 from tools import chrono, Bar
+
+from model.judge import reseq_2tones
 
 from collections import defaultdict
 
 
 @chrono
-def solve(instance: Instance):
+def solve(instance: Instance)->Solution:
     """Compute nothing."""
     ## TODO TODO le default
 
-    dic_station_y = {station.y: station.id for station in instance.substation_locations}
-    dic_turbine_y = defaultdict(list)
-    for turbine in instance.wind_turbines:
-        dic_turbine_y[turbine.y].append(turbine.id)
+    initial_order_vehicles = [v.id for v in instance.vehicles] 
+    
+    two_tones = [v.id for v in instance.vehicles if v.type == VehicleType.TWOTONE]
 
-    turb_to_stat = {}
-    for y in dic_turbine_y:
-        _, ys_min = min((abs(y-ys),ys) for ys in dic_station_y)
-        turb_to_stat[y] = ys_min
+    post_paint_order_vehicles = reseq_2tones(
+        sigma=initial_order_vehicles,
+        two_tones=two_tones,
+        delta=instance.parameters.two_tone_delta,
+    )
 
-    substation_type = instance.substation_types[0].id
-    to_mainland_cable_type = instance.land_substation_cable_types[0].id
-    substation_loc = instance.substation_locations[0].id
-    substations = [Substation(dic_station_y[yy], to_mainland_cable_type, substation_type) for yy in set(turb_to_stat.values())]
-
-    turbines = [Turbine(wind_turbine.id, dic_station_y[turb_to_stat[wind_turbine.y]]) for wind_turbine in instance.wind_turbines]
-
-    sol = Solution(turbines,substations, [])
+    sol = Solution(
+        body_entry=initial_order_vehicles,
+        body_exit=initial_order_vehicles,
+        paint_entry=initial_order_vehicles,
+        paint_exit=post_paint_order_vehicles,
+        assembly_entry=post_paint_order_vehicles,
+        assembly_exit=post_paint_order_vehicles,
+    )
 
     return sol

@@ -4,7 +4,7 @@ Driver instantiated for one instance by alias.
 Parser (loaded with `Driver.load`) implements 'next' iterative parsing method.
 """
 
-from moulinette2024.model import (
+from model import (
     VehicleType,
     Shop, 
     Parameters, 
@@ -102,6 +102,7 @@ class Driver(DriverBase):
         """Write solution to file."""
         # TODO TODO écriture du résultat
         writer = self.load("w", "out")
+        print(solution)
         dico = solution.assemble_dict()
         print(dico)
         writer.next(dico)

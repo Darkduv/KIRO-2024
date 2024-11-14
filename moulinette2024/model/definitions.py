@@ -182,7 +182,7 @@ class Solution:
         return {
             "body" : {
                 "entry" : self.body_entry,
-                "exit" : self.exit_entry,
+                "exit" : self.body_exit,
             },
             "paint" : {
                 "entry" : self.paint_entry,
@@ -193,3 +193,14 @@ class Solution:
                 "exit" : self.assembly_exit,
             },
         }
+
+    @classmethod
+    def from_json(cls, j:dict):
+        return Solution(
+            body_entry=j["body"]["entry"],
+            body_exit=j["body"]["exit"],
+            paint_entry=j["paint"]["entry"],
+            paint_exit=j["paint"]["exit"],
+            assembly_entry=j["assembly"]["entry"],
+            assembly_exit=j["assembly"]["exit"],
+        )
