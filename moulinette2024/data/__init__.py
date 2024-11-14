@@ -4,7 +4,7 @@ Driver instantiated for one instance by alias.
 Parser (loaded with `Driver.load`) implements 'next' iterative parsing method.
 """
 
-from model import (
+from moulinette2024.model import (
     VehicleType,
     Shop, 
     Parameters, 
@@ -63,15 +63,15 @@ def read_instance(instance_json:dict)->Instance:
             match c_type:
                 case "batch_size":
                     constraints.append(
-                        BatchSizeConstraint(**c)
+                        BatchSizeConstraint(**{k:v for k,v in c.items() if k!="type"})
                     )
                 case "lot_change":
                     constraints.append(
-                        LotChangeConstraint(**c)
+                        LotChangeConstraint(**{k:v for k,v in c.items() if k!="type"})
                     )
                 case "rolling_window":
                     constraints.append(
-                        RollingWindowConstraint(**c)
+                        RollingWindowConstraint(**{k:v for k,v in c.items() if k!="type"})
                     )
                 case _ :
                     raise ValueError("Erreur dans la lecture du json Constraints")
