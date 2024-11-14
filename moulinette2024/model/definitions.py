@@ -1,6 +1,7 @@
 import functools
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
+from enum import Enum
 from typing import Type, Generic, TypeVar, Callable, Any, Self
 T = TypeVar("T")
 
@@ -104,344 +105,48 @@ def to_json(
 
 ##############################
 
+class ShopType(Enum):
+    BODY = "body"
+    PAINT = "paint"
+    ASSEMBLY = "assembly"
 
-
-
-class Container(Generic[T]):
-
-    def __init__(self, type_: Type[T]):
-        self.container: dict[int, T] = {}
-        self.type_ = type_
-
-    def create(self, *args, **kwargs) -> T:
-        instance = self.type_(*args, **kwargs)
-        self.container[instance.id_] = instance
-        return instance
-
-    def __getitem__(self, item: int):
-        return self.container[item]
-
+class VehicleType(Enum):
+    REGULAR = "regular"
+    TWOTONE = "two-tone"
 
 @dataclass
-class Example:
-    """bonjour"""
-    id_: int
-
-
-example_container: Container[Example] = Container(Example)
-example33 = example_container.create(33)
-
-
-class ById(ABC):
-    dict_id = {}
-
-    def __init_subclass__(cls, **kwargs):
-        super().__init_subclass__(**kwargs)
-        cls.dict_id = {}
-
-    @property
-    def id_(self) -> int:
-        return self.id
-
-
-    def __post_init__(self):
-        self.dict_id[self.id_] = self
-
-    @classmethod
-    def by_id(cls: T, id_: int) -> Type[T]:
-        try:
-            return cls.dict_id[id_]
-        except KeyError as e:
-            print("KeyError : ", f"cls.__name__ = {cls.__name__}, id = {id_}")
-            raise e
-
-###################################
+class Shop:
+    name:ShopType
+    resequencing_lag:int
 
 @dataclass
-class LandSubstationCableType(ById):
-    rating                  : float
-    probability_of_failure  : float
-    variable_cost           : float
-    id                      : int
-    fixed_cost              : float
-
+class Parameter:
+    two_tone_delta:int
+    resequencing_cost:float
 
 @dataclass
-class Parameters:
-    fixed_cost_cable        : float
-    variable_cost_cable     : float
-    curtailing_penalty      : float
-    curtailing_cost         : float
-    x                       : float
-    y                       : float
-    maximum_power           : float
-    maximum_curtailing      : float
-
-
+class Vehicle:
+    id:int
+    type:VehicleType
 
 @dataclass
-class SubstationLocation(ById) :
-    id      :   int
-    x       :   float
-    y       :   float
+class Constraint:
+    id:int
+    shop:ShopType
+    cost:float
 
 @dataclass
-class SubstationSubstationCableType(ById):
-    rating          : float
-    variable_cost   : float
-    id              : int
-    fixed_cost      : float
-
+class BatchSizeConstraint(Constraint):
+    min_vehicles:int
+    max_vehicles:int
+    vehicles:list[int]
 
 @dataclass
-class SubstationType(ById) :
-    cost                    : float
-    rating                  : float
-    probability_of_failure  : float
-    id                      : int
+class LotChangeConstraint(Constraint):
+    partition:list[list[int]]
 
 @dataclass
-class WindScenario(ById) :
-    power_generation    : float
-    probability         : float
-    id                  : int
-
-@dataclass
-class WindTurbine(ById) :
-    id      : int
-    x       : float
-    y       : float
-
-
-@dataclass
-class Instance:
-
-    land_substation_cable_types: list[LandSubstationCableType]
-    wind_turbines: list[WindTurbine]
-    wind_scenarios: list[WindScenario]
-    substation_locations: list[SubstationLocation]
-    substation_types: list[SubstationType]
-    general_parameters: Parameters
-    substation_substation_cable_types: list[SubstationSubstationCableType]
-
-    def __post_init__(
-            self,
-    )->None:
-        
-        self.mainland_coords = (self.general_parameters.x, self.general_parameters.y)
-        self.substation_ids = [
-            sub.id for sub in self.substation_locations
-        ]
-        self.turbines_coords = {
-            turbine.id: (turbine.x, turbine.y)
-            for turbine in self.wind_turbines
-        }
-
-        self.substations_coords = {
-            substation.id: (substation.x, substation.y)
-            for substation in self.substation_locations
-        }
-
-        self.distance_of_turbine_to_substation = {
-            turbine: {
-                substation: ((tx-sx)**2 + (ty-sy)**2)**0.5
-                for substation, (sx, sy) in self.substations_coords.items()
-            }
-            for turbine, (tx, ty) in self.turbines_coords.items()
-        }
-
-        self.distance_of_substation_to_turbine = {
-            substation: {
-                turbine: self.distance_of_turbine_to_substation[turbine][substation]
-                for turbine in self.turbines_coords.keys()
-            }
-            for substation in self.substations_coords.keys()
-        }
-
-        self.distance_of_substation_to_mainland = {
-            substation: ((self.mainland_coords[0]-sx)**2 + (self.mainland_coords[1]-sy)**2)**0.5
-            for substation, (sx, sy) in self.substations_coords.items()
-        }
-
-        self.distance_of_substation_to_other_substation = {
-            substation: {
-                other: ((s1x-s2x)**2 + (s1y-s2y)**2)**0.5
-                for other, (s2x, s2y) in self.substations_coords.items()
-            }
-            for substation, (s1x, s1y) in self.substations_coords.items()
-        }
-
-
-#######
-
-@dataclass
-class Turbine :
-    id              : int
-    substation_id   : int
-
-@dataclass
-class SubstationSubstationCable :
-    substation_id       : int
-    other_substation_id : int
-    cable_type          : int
-
-@dataclass
-class Substation(ById):
-    id              : int
-    land_cable_type : int
-    substation_type : int
-
-
-EXPORT_DICT = {
-    # 'NOM_DE_LA_CLASSE' : ('ATTR1', 'ATTR2', 'ATTR3', ...)
-    'Substation': ('id', 'land_cable_type', 'substation_type'),
-    'Turbine': ('id', 'substation_id'),
-    'SubstationSubstationCable': (
-    'substation_id', 'other_substation_id', 'cable_type'),
-}
-
-##################### DICTIONNAIRE POUR EXPORT ################################
-IMPORT_DICT = {
-    # 'NOM_DE_LA_CLASSE' : Classe correspondante
-    'land_substation_cable_types': LandSubstationCableType,
-    'wind_turbines': WindTurbine,
-    'wind_scenarios': WindScenario,
-    'substation_locations': SubstationLocation,
-    'substation_types': SubstationType,
-    'general_parameters': Parameters,
-    'substation_substation_cable_types': SubstationSubstationCableType,
-    'substations': Substation,
-    'substation_substation_cables': SubstationSubstationCable,
-    'turbines': Turbine,
-}
-
-
-###############################################################################
-
-########################## FONCTIONS UTILES ###################################
-
-
-@dataclass
-class Solution:
-    turbines: list[Turbine]
-    substations: list[Substation]
-    substation_substation_cables: list[SubstationSubstationCable]
-
-    def __post_init__(self, )->None:
-        self.substations_ids=[
-            sub.id
-            for sub in self.substations
-        ]
-
-        self.turbines_connected_to_substations:dict[int, list[int]] = {
-            substa.id: [
-                turbine.id
-                for turbine in self.turbines
-                if turbine.substation_id == substa.id
-            ]
-            for substa in self.substations
-        }
-
-        self.substations_locations:dict[int, tuple[float]]= {
-            substa.id:(
-                SubstationLocation.by_id(substa.id).x,
-                SubstationLocation.by_id(substa.id).y
-            )
-            for substa in self.substations
-        }
-
-        self.turbines_locations:dict[int, tuple[float]] = {
-            turbine.id:(
-                WindTurbine.by_id(turbine.id).x,
-                WindTurbine.by_id(turbine.id).y,
-            )
-            for turbine in self.turbines
-        }
-
-        self.substations_connected:dict[int, list[int]] = defaultdict(list)
-        for cable in self.substation_substation_cables:
-            self.substations_connected[
-                cable.other_substation_id
-            ].append(cable.substation_id)
-        
-        self.substations_types:dict[int, SubstationType]= {
-            substa.id: SubstationType.by_id(substa.substation_type)
-            for substa in self.substations
-        }
-
-        self.mainland_cable_types:dict[int, LandSubstationCableType]= {
-            substa.id: LandSubstationCableType.by_id(substa.land_cable_type)
-            for substa in self.substations
-        }
-
-        self.substation_substation_cables_types:dict[int, SubstationSubstationCableType]= {
-            cable.substation_id: SubstationSubstationCableType.by_id(cable.cable_type)
-            for cable in self.substation_substation_cables
-        }
-
-        self.exiting_cables:dict[int, list[SubstationSubstationCable]]={
-            substation.id:[
-                cable 
-                for cable in self.substation_substation_cables
-                if cable.substation_id == substation.id
-            ]
-            for substation in self.substations
-        }
-        
-
-    def assemble_dict(self, ) -> dict:
-        result = {
-            'substations': [to_dict(e) for e in self.substations],
-            'turbines': [to_dict(e) for e in self.turbines],
-            'substation_substation_cables': [to_dict(e) for e in
-                                             self.substation_substation_cables],
-        }
-        return result
-
-    def to_json(self, json_file: str):
-        to_json(
-            self.assemble_dict(),
-            export_dict=EXPORT_DICT,
-            file_dump=json_file,
-        )
-
-    @classmethod
-    def from_json(cls, json_dict) -> Self:
-        import_dict = IMPORT_DICT
-        # on sort un dico
-
-        # on parcourt le json et on crée les objets
-        result = {}
-        for key_json, value in json_dict.items():
-            if not isinstance(value, (list, tuple)):
-                the_class = import_dict[key_json]
-                if 'main_land_station' in value:
-                    value['x'] = value['main_land_station']['x']
-                    value['y'] = value['main_land_station']['y']
-                    value.pop('main_land_station')
-                result[key_json] = the_class(**value)
-            else:
-                the_class = import_dict[key_json]
-                result[key_json] = []
-                for object in value:
-                    result[key_json].append(
-                        the_class(**object)
-                    )
-
-        return Solution(**result)
-
-@dataclass
-class StationXCableType(ById):
-
-    def __init__(self, station_type: SubstationType, cable_type: LandSubstationCableType):
-        self.station_type = station_type
-        self.cable_type = cable_type
-        self.fixed_cost = station_type.cost + cable_type.fixed_cost
-        self.variable_cost = cable_type.variable_cost
-        self.id = station_type.id*1000+cable_type.id
-        self.probability_of_failure = station_type.probability_of_failure + cable_type.probability_of_failure
-
-        self.rating = min(station_type.rating, cable_type.rating)
-
-
-###############################################################################
+class RollingWindowConstraint(Constraint):
+    window_size:int
+    max_vehicles:int
+    vehicles:list[int]
