@@ -18,6 +18,10 @@ def reseq_2tones(sigma: list[int], two_tones: list[int], delta: int) -> list[int
     return sigma
 
 
+def reseq_2tones_inv(sigma: list[int], two_tones: list[int], delta: int) -> list[int]:
+    return reseq_2tonnes(sigma[::-1], two_tones, delta)[::-1]
+
+
 def sigma_moins_1(sigma: list[int]) -> list[int]:
     """Renvoie sigma -1"""
     l2 = sorted(((v, i) for i, v in enumerate(sigma, start=1)))
