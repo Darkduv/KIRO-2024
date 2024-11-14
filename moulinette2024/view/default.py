@@ -1,29 +1,16 @@
 """Default, empty instance visualization tool."""
 
-# import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 from model import *
 
-IMPORT_DICT = {
-    # 'NOM_DE_LA_CLASSE' : Classe correspondante
-    'land_substation_cable_types'           : LandSubstationCableType,
-    'wind_turbines'                         : WindTurbine,
-    'wind_scenarios'                        : WindScenario,
-    'substation_locations'                  : SubstationLocation,
-    'substation_types'                      : SubstationType,
-    'general_parameters'                    : Parameters,
-    'substation_substation_cable_types'     : SubstationSubstationCableType,
-}
 
 
 def view(instance: Instance):
-    """Do nothing."""
-    ## TODO TODO vue par défaut
-    for arg in IMPORT_DICT:
-        print(f"#########################  {arg}   ###############")
-        val = instance.__getattribute__(arg)
-        if isinstance(val, list):
-            for i, el in enumerate(val):
-                print(f"{i: >10} :  {el}")
-        else:
-            print(val)
-    print(WindTurbine.by_id(1))
+    lot_consts = [constraint for constraint in instance.constraints if isinstance(constraint, LotChangeConstraint)]
+    batch_consts = [constraint for constraint in instance.constraints if isinstance(constraint, BatchSizeConstraint)]
+    rolling_consts = [constraint for constraint in instance.constraints if isinstance(constraint, RollingWindowConstraint)]
+    print("| Vehicles | Constraints | 2t cost | reseq cost || constraints || lot change | batchsize | rolling |")
+    print(f"| {len(instance.vehicles):8} | {len(instance.constraints):11}"
+          f" | {instance.parameters.two_tone_delta:7} | {instance.parameters.resequencing_cost:10}"
+          f" || {len(instance.constraints):11} || {len(lot_consts):10} | {len(batch_consts):9} | {len(rolling_consts):7} |")
+
