@@ -105,18 +105,13 @@ def to_json(
 
 ##############################
 
-class ShopType(Enum):
-    BODY = "body"
-    PAINT = "paint"
-    ASSEMBLY = "assembly"
-
 class VehicleType(Enum):
     REGULAR = "regular"
     TWOTONE = "two-tone"
 
 @dataclass
 class Shop:
-    name:ShopType
+    name:str
     resequencing_lag:int
 
 @dataclass
@@ -132,7 +127,7 @@ class Vehicle:
 @dataclass
 class Constraint:
     id:int
-    shop:ShopType
+    shop:str
     cost:float
 
 @dataclass
