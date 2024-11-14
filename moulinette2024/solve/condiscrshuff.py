@@ -29,6 +29,31 @@ def simply_reseq(instance:Instance, order : list[int])->Solution:
 
     return sol
 
+# def shuffle_between(instance:Instance, order:list[int])->Solution:
+#     initial_order_vehicles = order
+    
+#     two_tones = [v.id for v in instance.vehicles if v.type == VehicleType.TWOTONE]
+
+#     pre_paint = shuffle(order)
+
+#     post_paint = reseq_2tones(
+#         sigma=pre_paint,
+#         two_tones=two_tones,
+#         delta=instance.parameters.two_tone_delta,
+#     )
+
+#     pre_ass = shuffle(order)
+
+#     sol = Solution(
+#         body_entry=initial_order_vehicles,
+#         body_exit=initial_order_vehicles,
+#         paint_entry=pre_paint,
+#         paint_exit=post_paint,
+#         assembly_entry=pre_ass,
+#         assembly_exit=pre_ass,
+#     )
+
+#     return sol
 
 def optimal_lot_order(instance:Instance, lot_contraint:LotChangeConstraint)->list[int]:
     order = []
@@ -42,15 +67,13 @@ def optimal_lot_order(instance:Instance, lot_contraint:LotChangeConstraint)->lis
         if v.id not in order : 
             order.append(v.id)
 
-    print(order)
-
     return order
 
 def optimal_window_order(instance:Instance, window_contraint:RollingWindowConstraint)->list[int]:
 
-    vehicles_in_cons = window_contraint.vehicles
+    vehicles_in_cons = list(set(window_contraint.vehicles))
 
-    other_vehicle = [v.id for v in instance.vehicles if v.id not in vehicles_in_cons]
+    other_vehicle = list(set([v.id for v in instance.vehicles if v.id not in vehicles_in_cons]))
 
     ratio_other = round(len(other_vehicle)/len(vehicles_in_cons))
     ratio_cons = round(len(vehicles_in_cons)/len(other_vehicle))
@@ -67,27 +90,35 @@ def optimal_window_order(instance:Instance, window_contraint:RollingWindowConstr
     else:
         big = depop_in_other
         small = depop_in_cons
+    
+    ratio = ratio_cons if ratio_cons>0 else ratio_other
 
     while big and small :
-        batch_cons = big[:ratio_cons]
-        big = big[ratio_cons:]
-        solution += batch_cons
+        batch_big = big[:ratio]
+        big = big[ratio:]
+        solution += batch_big
         solution += small[:1]
         small = small[1:]
+
+    for v in instance.vehicles:
+        if v.id not in solution : 
+            solution.append(v.id)
 
     return solution
 
 def optimal_batch_order(instance:Instance, batch_constraint:BatchSizeConstraint, mini_ensemble:int=1)->list[int]:
 
-    vehicles_in_cons = batch_constraint.vehicles
+    vehicles_in_cons = list(set(batch_constraint.vehicles))
 
-    other_vehicle = [v.id for v in instance.vehicles if v.id not in vehicles_in_cons]
+    other_vehicle = list(set([v.id for v in instance.vehicles if v.id not in vehicles_in_cons]))
 
     ratio_other = round(len(other_vehicle)/len(vehicles_in_cons))
     ratio_cons = round(len(vehicles_in_cons)/len(other_vehicle))
 
     depop_in_cons = [i for i in vehicles_in_cons]
+    shuffle(depop_in_cons)
     depop_in_other = [i for i in other_vehicle]
+    shuffle(depop_in_other)
     solution = []
 
     if ratio_cons > 0 :
@@ -96,13 +127,19 @@ def optimal_batch_order(instance:Instance, batch_constraint:BatchSizeConstraint,
     else:
         big = depop_in_other
         small = depop_in_cons
+    
+    ratio = ratio_cons if ratio_cons>0 else ratio_other
 
     while big and small :
-        batch_cons = big[:ratio_cons]
-        big = big[ratio_cons:]
-        solution += batch_cons
+        batch_big = big[:ratio]
+        big = big[ratio:]
+        solution += batch_big
         solution += small[:1]
         small = small[1:]
+
+    for v in instance.vehicles:
+        if v.id not in solution : 
+            solution.append(v.id)
 
     return solution
 
