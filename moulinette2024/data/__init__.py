@@ -29,32 +29,24 @@ from typing import Any
 
 ##################### DICTIONNAIRE POUR EXPORT ################################
 
-class Driver(DriverBase):
-    """Custom model building methods."""
-
-    def read(self) -> Instance:
-        # TODO TODO lecture de l'instance
-        """Read instance from file."""
-        reader = self.load("r", "in")
-        json_dict = reader.next()
-
-        # A partir de la on peut parcourir a la main l'instance
+def read_instance(instance_json:dict)->Instance:
+    # A partir de la on peut parcourir a la main l'instance
         
         # On fait les shops
-        body_data = [e for e in json_dict["shops"] if e["name"] == "body"][0]
-        paint_data = [e for e in json_dict["shops"] if e["name"] == "paint"][0]
-        assembly_data = [e for e in json_dict["shops"] if e["name"] == "assembly"][0]
+        body_data = [e for e in instance_json["shops"] if e["name"] == "body"][0]
+        paint_data = [e for e in instance_json["shops"] if e["name"] == "paint"][0]
+        assembly_data = [e for e in instance_json["shops"] if e["name"] == "assembly"][0]
         
         bodyshop = Shop(**body_data)
         paintshop = Shop(**paint_data)
         assemblyshop = Shop(**assembly_data)
 
         # On fait les paramètres
-        two_tone_delta = json_dict["parameters"]["two_tone_delta"]
-        resequencing_cost = json_dict["parameters"]["resequencing_cost"]
+        two_tone_delta = instance_json["parameters"]["two_tone_delta"]
+        resequencing_cost = instance_json["parameters"]["resequencing_cost"]
 
         # On fait les véhicules
-        vehicles_data = json_dict["vehicles"]
+        vehicles_data = instance_json["vehicles"]
         vehicles = [
             Vehicle(
                 id = v["id"],
@@ -64,7 +56,7 @@ class Driver(DriverBase):
         ]
 
         # On fait les contraintes
-        cons_data = json_dict["constraints"]
+        cons_data = instance_json["constraints"]
         constraints : list[Constraint]= []
         for c in cons_data :
             c_type = c["type"]
@@ -93,6 +85,18 @@ class Driver(DriverBase):
             vehicles=vehicles,
             constraints=constraints,
         )
+
+
+class Driver(DriverBase):
+    """Custom model building methods."""
+
+    def read(self) -> Instance:
+        # TODO TODO lecture de l'instance
+        """Read instance from file."""
+        reader = self.load("r", "in")
+        json_dict = reader.next()
+
+        return read_instance(instance_json=json_dict)
 
     def write(self, solution:Solution):
         """Write solution to file."""
