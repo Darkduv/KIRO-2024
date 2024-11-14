@@ -54,7 +54,7 @@ class Service:
 
     def __call__(self, alias):
         """Use service on an instance."""
-        print(f"\nrunning on {alias}")
+        print("\n"+"="*80+f"\nrunning on {alias}\n=============================")
         driver = Driver(alias)
         instance = driver.read()
         return self.call(instance)
