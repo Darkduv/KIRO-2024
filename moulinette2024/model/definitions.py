@@ -115,7 +115,7 @@ class Shop:
     resequencing_lag:int
 
 @dataclass
-class Parameter:
+class Parameters:
     two_tone_delta:int
     resequencing_cost:float
 
@@ -145,3 +145,19 @@ class RollingWindowConstraint(Constraint):
     window_size:int
     max_vehicles:int
     vehicles:list[int]
+
+@dataclass
+class Instance:
+    shops:list[Shop]
+    parameters:Parameters
+    vehicles:list[Vehicle]
+    constraints:list[Constraint]
+
+@dataclass
+class Solution:
+    body_entry:list[int]
+    body_exit:list[int]
+    paint_entry:list[int]
+    paint_exit:list[int]
+    assembly_entry:list[int]
+    assembly_exit:list[int]
