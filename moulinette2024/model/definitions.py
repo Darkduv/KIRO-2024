@@ -109,6 +109,13 @@ class VehicleType(Enum):
     REGULAR = "regular"
     TWOTONE = "two-tone"
 
+    @classmethod
+    def get(cls, name:str):
+        match name:
+            case "regular" : return VehicleType.REGULAR
+            case "two-tone" : return VehicleType.TWOTONE
+            case _ : raise ValueError("Plantage dans VehicleType")
+
 @dataclass
 class Shop:
     name:str
@@ -154,6 +161,13 @@ class Instance:
     parameters:Parameters
     vehicles:list[Vehicle]
     constraints:list[Constraint]
+
+    def get_shop(self, name:str)->Shop:
+        match name:
+            case "body": return self.body_shop 
+            case "paint": return self.paint_shop 
+            case "assembly": return self.assembly_shop
+            case _ : raise ValueError("Erreur dans la programmation de get_shop")
 
 @dataclass
 class Solution:

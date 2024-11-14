@@ -4,7 +4,18 @@ Driver instantiated for one instance by alias.
 Parser (loaded with `Driver.load`) implements 'next' iterative parsing method.
 """
 
-from model import *
+from model import (
+    VehicleType,
+    Shop, 
+    Parameters, 
+    Vehicle, 
+    Constraint, 
+    BatchSizeConstraint, 
+    LotChangeConstraint,
+    RollingWindowConstraint,
+    Instance, 
+    Solution
+)
 
 from .driver import DriverBase
 import json
@@ -17,18 +28,6 @@ from typing import Any
 ###############################################################################
 
 ##################### DICTIONNAIRE POUR EXPORT ################################
-IMPORT_DICT = {
-    # 'NOM_DE_LA_CLASSE' : Classe correspondante
-    'land_substation_cable_types'           : LandSubstationCableType,
-    'wind_turbines'                         : WindTurbine,
-    'wind_scenarios'                        : WindScenario,
-    'substation_locations'                  : SubstationLocation,
-    'substation_types'                      : SubstationType,
-    'general_parameters'                    : Parameters,
-    'substation_substation_cable_types'     : SubstationSubstationCableType,
-}
-
-
 
 class Driver(DriverBase):
     """Custom model building methods."""
@@ -36,28 +35,64 @@ class Driver(DriverBase):
     def read(self) -> Instance:
         # TODO TODO lecture de l'instance
         """Read instance from file."""
-        import_dict = IMPORT_DICT
         reader = self.load("r", "in")
         json_dict = reader.next()
-        # on parcourt le json et on crée les objets
-        result = {}
-        for key_json, value in json_dict.items():
-            if not isinstance(value, (list, tuple)):
-                the_class = import_dict[key_json]
-                if 'main_land_station' in value:
-                    value['x'] = value['main_land_station']['x']
-                    value['y'] = value['main_land_station']['y']
-                    value.pop('main_land_station')
-                result[key_json] = the_class(**value)
-            else:
-                the_class = import_dict[key_json]
-                result[key_json] = []
-                for object in value:
-                    result[key_json].append(
-                        the_class(**object)
+
+        # A partir de la on peut parcourir a la main l'instance
+        
+        # On fait les shops
+        body_data = [e for e in json_dict["shops"] if e["name"] == "body"][0]
+        paint_data = [e for e in json_dict["shops"] if e["name"] == "paint"][0]
+        assembly_data = [e for e in json_dict["shops"] if e["name"] == "assembly"][0]
+        
+        bodyshop = Shop(**body_data)
+        paintshop = Shop(**paint_data)
+        assemblyshop = Shop(**assembly_data)
+
+        # On fait les paramètres
+        two_tone_delta = json_dict["parameters"]["two_tone_delta"]
+        resequencing_cost = json_dict["parameters"]["resequencing_cost"]
+
+        # On fait les véhicules
+        vehicles_data = json_dict["vehicles"]
+        vehicles = [
+            Vehicle(
+                id = v["id"],
+                type=VehicleType.get(v["type"]),
+            )
+            for v in vehicles_data
+        ]
+
+        # On fait les contraintes
+        cons_data = json_dict["constraints"]
+        constraints : list[Constraint]= []
+        for c in cons_data :
+            c_type = c["type"]
+            match c_type:
+                case "batch_size":
+                    constraints.append(
+                        BatchSizeConstraint(**c)
                     )
+                case "lot_change":
+                    constraints.append(
+                        LotChangeConstraint(**c)
+                    )
+                case "rolling_window":
+                    constraints.append(
+                        RollingWindowConstraint(**c)
+                    )
+                case _ :
+                    raise ValueError("Erreur dans la lecture du json Constraints")
+                
         # print(result)
-        return Instance(**result)
+        return Instance(
+            body_shop=bodyshop,
+            paint_shop=paintshop,
+            assembly_shop=assemblyshop,
+            parameters=Parameters(two_tone_delta=two_tone_delta, resequencing_cost=resequencing_cost),
+            vehicles=vehicles,
+            constraints=constraints,
+        )
 
     def write(self, solution):
         """Write solution to file."""
