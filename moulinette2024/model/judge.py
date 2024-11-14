@@ -66,9 +66,9 @@ def lot_changes_cost(inst: Instance, sol: Solution):
         if not isinstance(constraint, LotChangeConstraint):
             continue
         partitions = {}
-        for group in constraint.partition:
+        for i, group in enumerate(constraint.partition):
             for a in group:
-                partitions[a] = set(group)
+                partitions[a] = i
         sigma = shops[constraint.shop]
         for v1, v2 in zip(sigma, sigma[1:]):
             if partitions[v1] != partitions[v2]:
@@ -92,8 +92,8 @@ def rolling_cost(inst: Instance, sol: Solution):
             continue
         sigma = shops[constraint.shop]
         val = [v in constraint.vehicles for v in sigma]
-        violations = max(0, max(sum_batches(val, constraint.window_size))-constraint.max_vehicles)
-        ss += constraint.cost * violations ** 2
+        violations = sum(max(0, batch-constraint.max_vehicles)**2 for batch in sum_batches(val,constraint.window_size))
+        ss += constraint.cost * violations
     return ss
 
 
