@@ -9,6 +9,8 @@ from model.judge import reseq_2tones
 
 from collections import defaultdict
 
+from random import shuffle
+
 
 @chrono
 def solve(instance: Instance)->Solution:
@@ -16,6 +18,7 @@ def solve(instance: Instance)->Solution:
     ## TODO TODO le default
 
     initial_order_vehicles = [v.id for v in instance.vehicles]
+    shuffle(initial_order_vehicles) 
     
     two_tones = [v.id for v in instance.vehicles if v.type == VehicleType.TWOTONE]
 
