@@ -148,7 +148,9 @@ class RollingWindowConstraint(Constraint):
 
 @dataclass
 class Instance:
-    shops:list[Shop]
+    body_shop:Shop
+    paint_shop:Shop
+    assembly_shop:Shop
     parameters:Parameters
     vehicles:list[Vehicle]
     constraints:list[Constraint]
