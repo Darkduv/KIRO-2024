@@ -177,3 +177,19 @@ class Solution:
     paint_exit:list[int]
     assembly_entry:list[int]
     assembly_exit:list[int]
+
+    def assemble_dict(self)->dict[str, list[int]]:
+        return {
+            "body" : {
+                "entry" : self.body_entry,
+                "exit" : self.exit_entry,
+            },
+            "paint" : {
+                "entry" : self.paint_entry,
+                "exit" : self.paint_exit,
+            },
+            "assembly" : {
+                "entry" : self.assembly_entry,
+                "exit" : self.assembly_exit,
+            },
+        }

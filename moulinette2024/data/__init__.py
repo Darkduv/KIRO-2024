@@ -94,13 +94,13 @@ class Driver(DriverBase):
             constraints=constraints,
         )
 
-    def write(self, solution):
+    def write(self, solution:Solution):
         """Write solution to file."""
         # TODO TODO écriture du résultat
         writer = self.load("w", "out")
         dico = solution.assemble_dict()
         print(dico)
-        writer.next(solution.assemble_dict())
+        writer.next(dico)
 
     def retrieve(self):
         """Read solution from file."""
